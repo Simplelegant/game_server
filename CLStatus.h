@@ -14,7 +14,7 @@ public:
 
 public:
 	const long& m_clReturnCode;
-	const long& m_clErrrorCode;
+	const long& m_clErrorCode;
 
 private:
 	long m_lReturnCode;

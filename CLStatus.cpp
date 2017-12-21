@@ -14,7 +14,7 @@ CLStatus::CLStatus(const CLStatus& s) : m_clReturnCode(m_lReturnCode), m_clError
 	m_lErrorCode = s.m_lErrorCode;
 }
 
-bool::IsSuccess(){
+bool CLStatus::IsSuccess(){
 	if(m_lReturnCode >= 0)
 		return true;
 	else
