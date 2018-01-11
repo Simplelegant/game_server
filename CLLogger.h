@@ -3,19 +3,27 @@
 
 #include "CLStatus.h"
 
-class CLLogger {
+class CLLogger
+{
 public:
-	CLLogger();
-	virtual ~CLLogger();
-
-	CLStatus WriteLog(const char *pStrMsg, long lErrorCode);
+	static CLLogger* GetInstance();
+	static CLStatus WriteLogMsg(const char *pstrMsg, long lErrorCode);
+	CLStatus WriteLog(const char *pstrMsg, long lErrorCOde);
+	CLStatus Flush();
 
 private:
 	CLLogger(const CLLogger&);
-	CLStatus &operator=(const CLLogger&);
+	CLLogger& operator=(const CLLogger&);
+
+	CLLogger();
+	~CLLogger();
+
+	int m_Fd;
+	static CLLogger *m_pLog;
 
 private:
-	int m_Fd;
+	char *m_pLogBuffer;
+	unsigned int m_nUsedBytesForBuffer;
 };
 
 #endif
