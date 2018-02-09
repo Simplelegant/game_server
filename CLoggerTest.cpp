@@ -1,11 +1,26 @@
 #include <iostream>
+#include "CLStatus.h"
 #include "CLLogger.h"
 
-int main(){
-	CLLogger logger;
+using namespace std;
 
-	logger.WriteLog("First Error~", 5);
-	logger.WriteLog("Second Error~", 6);
+CLStatus f(){
+	return CLStatus(-1, 4);
+}
+
+class A{
+public:
+	~A(){
+		CLLogger::WriteLogMsg("in A", 0);
+	}
+};
+
+A a;
+
+int main(){
+	CLStatus s = f();
+	if(!s.IsSuccess())
+		CLLogger::WriteLogMsg("this is an error", s.m_clErrorCode);
 
 	return 0;
 }
