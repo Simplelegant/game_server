@@ -1,8 +1,9 @@
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
+#include <stdlib.h>
 #include "CLLogger.h"
 
 #define LOG_FILE_NAME "CLLogger.txt"
@@ -11,15 +12,16 @@
 
 CLLogger* CLLogger::m_pLog = 0;
 
-CLLogger::CLLogger(){
-	m_Fd = open(LOG_FILE_NAME, O_RDWR | O_CREAT | O_APPEND | S_IRUSR | S_IWUSR);
+CLLogger::CLLogger()
+{
+	m_Fd = open(LOG_FILE_NAME, O_RDWR | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
 
 	m_pLogBuffer = new char[BUFFER_SIZE_LOG_FILE];
 	m_nUsedBytesForBuffer = 0;
 }
 
-
-CLStatus CLLogger::WriteLogMsg(const char *pstrMsg, long lErrorCode){
+CLStatus CLLogger::WriteLogMsg(const char *pstrMsg, long lErrorCode)
+{
 	CLLogger *pLog = CLLogger::GetInstance();
 	if(pLog == 0)
 		return CLStatus(-1, 0);
@@ -31,11 +33,9 @@ CLStatus CLLogger::WriteLogMsg(const char *pstrMsg, long lErrorCode){
 		return CLStatus(-1, 0);
 }
 
-CLStatus CLLogger::Flush(){
+CLStatus CLLogger::Flush()
+{
 	if(m_Fd == -1)
-		return CLStatus(-1, 0);
-
-	if(m_pLogBuffer == 0)
 		return CLStatus(-1, 0);
 
 	if(m_nUsedBytesForBuffer == 0)
@@ -50,7 +50,8 @@ CLStatus CLLogger::Flush(){
 	return CLStatus(0, 0);
 }
 
-CLStatus CLLogger::WriteLog(const char *pstrMsg, long lErrorCode){
+CLStatus CLLogger::WriteLog(const char *pstrMsg, long lErrorCode)
+{
 	if(pstrMsg == 0)
 		return CLStatus(-1, 0);
 
@@ -96,12 +97,32 @@ CLStatus CLLogger::WriteLog(const char *pstrMsg, long lErrorCode){
 
 	memcpy(m_pLogBuffer + m_nUsedBytesForBuffer, buf, len_code);
 
+	m_nUsedBytesForBuffer += len_code;
+
 	return CLStatus(0, 0);
 }
 
-CLLogger* CLLogger::GetInstance(){
-	if(m_pLog == 0)
+CLLogger* CLLogger::GetInstance()
+{
+	if(m_pLog == 0){
 		m_pLog = new CLLogger;
 
+		if(atexit(CLLogger::OnProcessExit) != 0){
+			if(m_pLog != 0){
+				m_pLog->WriteLog("In CLLogger::GetInstance(), atexit error", errno);
+				m_pLog->Flush();
+			}
+		}
+	}
+
 	return m_pLog;
+}
+
+void CLLogger::OnProcessExit()
+{
+	CLLogger *pLogger = CLLogger::GetInstance();
+	if(pLogger != 0){
+		pLogger->Flush();
+		pLogger->m_bFlagForProcessExit = true;
+	}
 }

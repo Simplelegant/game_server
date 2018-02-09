@@ -12,6 +12,9 @@ public:
 	CLStatus Flush();
 
 private:
+	static void OnProcessExit();
+
+private:
 	CLLogger(const CLLogger&);
 	CLLogger& operator=(const CLLogger&);
 
@@ -24,6 +27,9 @@ private:
 private:
 	char *m_pLogBuffer;
 	unsigned int m_nUsedBytesForBuffer;
+
+private:
+	bool m_bFlagForProcessExit;
 };
 
 #endif
